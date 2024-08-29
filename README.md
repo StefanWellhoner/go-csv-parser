@@ -1,5 +1,5 @@
 # CSV Parser in GO
-This is a simple CSV parser written in GO. It reads a CSV file and prints the content to the console.
+This is a simple CSV parser written in GO. It reads a CSV file and prints the content to the console or to a text file in JSON format.
 
 ## How to run
 1. Clone the repository
