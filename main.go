@@ -58,17 +58,20 @@ func main() {
 
     flag.Parse()
 
+    // Show help
     if *help {
 		flag.Usage()
 		return
 	}
-
+    
+    // Check if the CSV file is provided
     if len(flag.Args()) < 1 {
         fmt.Println("Please provide the CSV file name")
         flag.Usage()
         os.Exit(0)
     }
-  
+     
+    // Open the file
     filePath := flag.Arg(0)
 
     file, err := os.Open(filePath)
@@ -76,6 +79,7 @@ func main() {
         fmt.Println("Error opening file:", err)
         os.Exit(1)
     }
+    // Close the file when the function returns
     defer file.Close()
     
     fmt.Printf("Parsing file: %s\nUsing delimiter %s\n", filePath, *delimiter)
@@ -93,6 +97,7 @@ func main() {
     for scanner.Scan() {
         if linesParsed == 0 {
             ParseHeaders(scanner.Text())
+            linesParsed++
             continue
         }
         data.Rows = append(data.Rows, BuildMap(scanner.Text()))
@@ -115,6 +120,5 @@ func main() {
     }
 
     fmt.Println("Time taken:", time.Since(startTime))
-    // -1 because we skip the header
     fmt.Println("Parsed lines:", linesParsed)
 }
