@@ -1,13 +1,13 @@
 package main
 
 import (
-	"bufio"
-	"encoding/json"
-	"flag"
-	"fmt"
-	"os"
-	"strings"
-	"time"
+    "bufio"
+    "encoding/json"
+    "flag"
+    "fmt"
+    "os"
+    "strings"
+    "time"
 )
 
 var headers []string
@@ -60,17 +60,17 @@ func main() {
 
     // Show help
     if *help {
-		flag.Usage()
-		return
-	}
-    
+        flag.Usage()
+        return
+    }
+
     // Check if the CSV file is provided
     if len(flag.Args()) < 1 {
         fmt.Println("Please provide the CSV file name")
         flag.Usage()
         os.Exit(0)
     }
-     
+
     // Open the file
     filePath := flag.Arg(0)
 
@@ -81,7 +81,7 @@ func main() {
     }
     // Close the file when the function returns
     defer file.Close()
-    
+
     fmt.Printf("Parsing file: %s\nUsing delimiter %s\n", filePath, *delimiter)
 
     scanner := bufio.NewScanner(file)
@@ -109,7 +109,7 @@ func main() {
         fmt.Println("Error marshalling data:", err)
         os.Exit(1)
     }
-    
+
     if *outFile != "" {
         if err := WriteFile(json, *outFile); err != nil {
             fmt.Println("Error writing file:", err)
