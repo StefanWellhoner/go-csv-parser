@@ -2,19 +2,21 @@ package main
 
 import (
     "bufio"
-    "encoding/json"
     "flag"
     "fmt"
     "os"
     "strings"
     "time"
+
+    "github.com/StefanWellhoner/csv-parser/json_parser"
+    "github.com/StefanWellhoner/csv-parser/yaml_parser"
 )
 
 var headers []string
 var delimiter *string
 
 type Data struct {
-    Rows    []map[string]string `json:"rows"`
+    Rows []map[string]string `json:"rows"`
 }
 
 func ParseHeaders(line string) {
@@ -30,30 +32,17 @@ func BuildMap(line string) map[string]string {
     return m
 }
 
-func WriteFile(data []byte, path string) error {
-    file, err := os.Create(path)
-    if err != nil {
-        return err
-    }
-    defer file.Close()
-
-    _, err = file.Write(data)
-    if err != nil {
-        return err
-    }
-
-    return nil
-}
-
 /**
 * Flags
 * -delim: Delimiter used in the CSV file
 * -o: Output file path (optional)
+* -format: Output format (json or yaml)
 * -h: Show help
 */
 func main() {
     delimiter = flag.String("delim", ",", "Delimiter used in the CSV file")
     outFile := flag.String("o", "", "Output file path (optional)")
+    format := flag.String("format", "json", "Output format (json or yaml)")
     help := flag.Bool("h", false, "Show help")
 
     flag.Parse()
@@ -75,7 +64,7 @@ func main() {
     filePath := flag.Arg(0)
 
     file, err := os.Open(filePath)
-    if err != nil {
+    if (err != nil) {
         fmt.Println("Error opening file:", err)
         os.Exit(1)
     }
@@ -104,19 +93,40 @@ func main() {
         linesParsed++
     }
 
-    json, err := json.MarshalIndent(data.Rows, "", "\t")
-    if err != nil {
-        fmt.Println("Error marshalling data:", err)
-        os.Exit(1)
-    }
-
-    if *outFile != "" {
-        if err := WriteFile(json, *outFile); err != nil {
-            fmt.Println("Error writing file:", err)
+    switch *format {
+    case "yaml":
+        yamlData, err := yaml_parser.ConvertToYAML(data.Rows)
+        if err != nil {
+            fmt.Println("Error converting to Yaml:", err)
             os.Exit(1)
         }
-    } else {
-        fmt.Println(string(json))
+
+        if *outFile != "" {
+            if err := yaml_parser.WriteYAMLFile(yamlData, *outFile); err != nil {
+                fmt.Println("Error writing file:", err)
+                os.Exit(1)
+            }
+        } else {
+            fmt.Println(string(yamlData))
+        }
+    case "json":
+        jsonData, err := json_parser.ConvertToJSON(data.Rows)
+        if err != nil {
+            fmt.Println("Error converting to JSON:", err)
+            os.Exit(1)
+        }
+
+        if *outFile != "" {
+            if err := json_parser.WriteJSONFile(jsonData, *outFile); err != nil {
+                fmt.Println("Error writing file:", err)
+                os.Exit(1)
+            }
+        } else {
+            fmt.Println(string(jsonData))
+        }
+    default:
+        fmt.Println("Invalid format specified. Use 'json' or 'yaml'.")
+        os.Exit(1)
     }
 
     fmt.Println("Time taken:", time.Since(startTime))
